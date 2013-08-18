@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>Pollnation</title>
+    {% load staticfiles %}
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'polls/images/favicon.png' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/style.css' %}" media="all"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/prettyPhoto.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/type/classic.css' %}" media="all"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/type/goudy.css' %}" media="all"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/jquery.jqplot.min.css' %}"/>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{% static 'polls/js/jquery.jqplot.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'polls/js/jqplot.pieRenderer.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'polls/js/jquery.prettyPhoto.js' %}"></script>
+    <script type="text/javascript" src="{% static 'polls/js/scripts.js' %}"></script>
+
+</head>
+<body>
+<div id="body-wrapper">
+    <!-- Begin Header -->
+    <div id="header">
+        <div class="logo">
+            <a href="index.html"><img src="{% static 'polls/images/logo.png' %}" alt=""/></a>
+        </div>
+
+
+        <!-- Begin Menu -->
+        <div class="menu">
+
+            <ul class="sf-menu">
+                <li><a href="/polls/">Home</a></li>
+                <li><a href="/polls/create">Create a Poll</a></li>
+                <li><a href="/polls/directory">Directory</a></li>
+                <li><a href="/polls/search">Search</a></li>
+                {% if logged_in %}
+                    <li><a href="{% url 'polls:account' %}">My Account</a></li>
+                    <li><a href="{% url 'polls:logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'polls:register' %}">Register</a></li>
+                {% endif %}
+
+
+            </ul>
+
+        </div>
+        <div class="clear"></div>
+        <!-- End Menu -->
+
+    </div>
+    <!-- End Header -->
+
+
+    <!-- Begin Wrapper -->
+    <div id="wrapper">
+
+        {% block content %}
+
+
+        {% endblock content %}
+
+
+        <div class="sidebar">
+
+            <div class="sidebox">
+                <h3 class="line">About</h3>
+
+                <p>Welcome to PollNation the #1 place on the web to create and vote on polls!</p>
+                <br/>
+
+                <p>Built with Django! </p>
+            </div>
+
+    {% if auth_form %}
+        <div class="sidebox">
+        <div class="form-container">
+            <form class="forms" action="/polls/login" method="post">
+                <fieldset>
+                    <ol>
+                        {% csrf_token %}
+                        {% for field in auth_form %}
+                            <li class="form-row text-input-row">{{ field }}</li>
+                        {% endfor %}
+                    </ol>
+                    <input type="submit" id="btnLogIn" value="Log In">
+                </fieldset>
+            </form>
+        </div></div>
+    {% endif %}
+
+
+{% block sidebar %}
+        {% endblock sidebar %}
+    <div class="sidebox">
+        <h3 class="line">Popular Polls</h3>
+        <ul class="popular-posts">
+            {% for p in top_polls %}
+                <li>
+
+                    <h5><a href="{% url 'polls:detail' p.id %}">{{ p.question }}</a></h5>
+                    <span>{{ p.pub_date }} | <a href="{% url 'polls:detail' p.id %}">{{ p.num_votes }} Votes</a> | <a
+                            href="{% url 'polls:detail' p.id %}">{{ p.comment_set.count }} Comments</a></span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    <div class="sidebox">
+        <h3 class="line">Top Tags</h3>
+        <ul class="cat-list">
+            {% for tag in top_tags %}
+                <li><a href="/polls/search?q={{ tag }}">{{ tag }} ({{ tag.num_times }})</a></li>
+
+            {% endfor %}
+        </ul>
+    </div>
+
+
+
+        <div class="sidebox">
+                    <h3 class="line">Search</h3>
+
+                    <form class="searchform" action="{% url 'polls:search' %}" method="get">
+                        <input type="text" id="id_q" name="q" value="type and hit enter" onfocus="this.value=''"
+                               onblur="this.value='type and hit enter'"/>
+                    </form>
+                </div>
+        </div>
+        <div class="clear"></div>
+
+    </div>
+    <!-- End Wrapper -->
+
+    <div class="push"></div>
+</div>
+<!-- End Body Wrapper -->
+
+<div id="footer">
+    <div class="footer">
+        <p>Copyright &copy; 2013 PollNation. All Rights Reserved.</p>
+    </div>
+</div>
+
+</body>
+</html>

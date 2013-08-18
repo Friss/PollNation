@@ -1,0 +1,106 @@
+{% extends "polls/base.html" %}
+
+{% block content %}
+    <div class="intro">All Polls Made By You!</div>
+
+    <!-- Begin Container -->
+    <div class="container">
+
+
+        {% if polls.object_list %}
+
+            {% for poll in polls.object_list %}
+                <div class="post text">
+    <div class="icon-chat"></div>
+    <div class="content">
+    	<div class="top"></div>
+    	<div class="middle">
+    		<div class="post-text">
+    			<h2 class="title"><a href="{% url 'polls:detail' poll.id %}">{{ poll.question }}</a><span class="del"><a href="{% url 'polls:delete' poll.id %}">Delete Poll</a></span></h2>
+    			 <div id="pie{{ poll.id }}"
+                                 style="padding-top: 20px; margin-left: 20px; width: 495px; height: 347px; position: relative;"
+                                 class="jqplot-target"></div>
+                            <script>
+                                $(document).ready(function () {
+                                    var plot{{ poll.id }} = $.jqplot('pie{{ poll.id }}', [
+                                        [
+
+                                            {% for choice in poll.choice_set.all %}
+
+                                                ['{{ choice.choice_text }} - {{choice.votes}}', {{choice.votes}}],
+
+                                            {% endfor %}
+                                        ]
+                                    ], {
+
+                                        seriesDefaults: {
+                                            renderer: $.jqplot.PieRenderer,
+                                            trendline: { show: false },
+                                            rendererOptions: { padding: 10, showDataLabels: true }
+                                        },
+                                        legend: { show: true, location: 'e' }
+                                    });
+                                });
+                            </script>
+    		</div>
+    		<div class="meta-wrapper">
+                                <div class="meta">
+                                    <ul class="post-info">
+                                        <li><span class="post-link"></span><a
+                                                href="{% url 'polls:detail' poll.id %}">{{ poll.pub_date }}</a></li>
+                                        <li><span class="post-comment"></span><a href="{% url 'polls:detail' poll.id %}">Total
+                                            Votes: {{ poll.num_votes }}</a> | <a href="{% url 'polls:detail' poll.id %}">Total
+                                            Comments: {{ poll.comment_set.count }}</a></li>
+                                        <li><span class="post-tag"></span>
+                                            {% for tag in poll.tags.all %}
+                                                <a href="/polls/search?q={{ tag }}">{{ tag }}</a>,
+                                            {% endfor %}
+                                    </ul>
+                                    <div class="share"><span class="post-share"></span><a href="#">Share</a></div>
+                                    <div class="clear"></div>
+                                </div>
+                            </div>
+    	</div>
+    	<div class="bottom"></div>
+    </div>
+    </div>
+
+
+            {% endfor %}
+
+        {% else %}
+            <p>No polls are available.</p>
+        {% endif %}
+
+
+
+
+        <!-- Begin Page Navi -->
+        <div class="page-navi">
+            <ul>
+                {% if polls.has_previous %}
+                    <li><a href="?page={{ polls.previous_page_number }}">{{ polls.previous_page_number }}</a></li>
+                {% endif %}
+                <li><a href="#" class="current">{{ polls.number }}</a></li>
+                {% if polls.has_next %}
+                    <li><a href="?page={{ polls.next_page_number }}">{{ polls.next_page_number }}</a></li>
+                {% endif %}
+
+
+                {% if polls.number != polls.paginator.num_pages and polls.next_page_number != polls.paginator.num_pages %}
+
+                    <li><a href="?page={{ polls.paginator.num_pages }}">{{ polls.paginator.num_pages }}</a></li>
+                {% endif %}
+
+            </ul>
+        </div>
+        <!-- End Page Navi -->
+    </div>
+    <!-- End Container -->
+{% endblock content %}
+
+
+
+
+
+

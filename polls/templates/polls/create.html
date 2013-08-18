@@ -1,0 +1,52 @@
+{% extends "polls/base.html" %}
+
+{% block content %}
+    {% if logged_in %}
+    <div class="intro">Create Your Own Poll!</div>
+
+    <!-- Begin Container -->
+    <div class="container">
+        {% if poll_form.non_field_errors %}
+            <div class="flash error">
+
+                {{ poll_form.non_field_errors }}
+            </div>
+        {% endif %}
+
+
+        <div class="form-container">
+            <form class="forms" action="{% url 'polls:create' %}" method="POST">
+                <fieldset>
+                {% csrf_token %}
+
+        {{ poll_form.as_p }}
+
+    <h2>Poll Choices</h2>
+    {{ choice_formset.management_form }}
+    {% for form in choice_formset.forms %}
+
+      <div class="item">
+      {{ form.as_p }}
+      <p style=""><a class="button red delete" href="#">Delete</a></p>
+    </div>
+
+
+
+    {% endfor %}
+    <p><a class="button green" id="add" href="#">Add another item</a></p>
+    <input type="submit" value=" Submit " />
+                </fieldset>
+</form>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="container">
+
+        <h2 class="line">Register or Login to Create a Poll</h2>
+
+        <p>PollNation requires users to be registered and logged in to create new polls. Thank you!
+        </div>
+    {% endif %}
+
+{% endblock content %}

@@ -1,0 +1,33 @@
+{% extends "polls/base.html" %}
+
+{% block content %}
+    <div class="intro">New to PollNation? Register for an account below and start creating your own polls!</div>
+
+    <!-- Begin Container -->
+    <div class="container">
+        {% if user_form.non_field_errors %}
+            <div class="flash error">
+
+                {{ user_form.non_field_errors }}
+            </div>
+        {% endif %}
+        <h2 class="line">Register For A PollNation Account</h2>
+
+        <div class="form-container">
+            <form class="forms" action="signup" method="post">
+                <fieldset>
+                    <ol>
+                        {% csrf_token %}
+                        {% for field in user_form %}
+                            <li class="form-row text-input-row"><label>{{ field.label|title }}:</label>{{ field }}</li>
+                        {% endfor %}
+                    </ol>
+                    <input type="submit" value="Create Account">
+                </fieldset>
+
+
+            </form>
+
+        </div>
+    </div>
+{% endblock content %}

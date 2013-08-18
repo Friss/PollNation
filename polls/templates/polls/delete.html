@@ -1,0 +1,44 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+    <div class="intro">{{ poll.question }}</div>
+
+    <!-- Begin Blog -->
+    <div class="container">
+        <div class="post photo">
+            <div class="icon-chat"></div>
+            <div class="content">
+                <div class="top"></div>
+                <div class="middle">
+                 <div class="post-text">
+                    <h2 class="title"><a href="{% url 'polls:detail' poll.id %}">Delete Poll "{{ poll.question }}"</a></h2>
+
+                        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+                        <form action="{% url 'polls:delete' poll.id %}" method="post">
+                            {% csrf_token %}
+
+                            <input type="hidden" name="id" value="{{ poll.id }}" />
+                            <input type="submit" value="Confirm Delete"/>
+                        </form>
+                    </div>
+                    <div class="meta-wrapper">
+                        <div class="meta">
+                            <ul class="post-info">
+                                <li><span class="post-link"></span><a href="#">{{ poll.pub_date }}</a></li>
+                                <li><span class="post-comment"></span><a href="#">{{ poll.comment_set.count }} Comments</a></li>
+                                <li><span class="post-tag"></span>{% for tag in poll.tags.all %}
+                                    <a href="#">{{ tag }}</a>,
+                                {% endfor %}</li>
+                            </ul>
+                            <div class="share"><span class="post-share"></span><a href="#">Share</a></div>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+        </div>
+
+</div>
+{% endblock content %}

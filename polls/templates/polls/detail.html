@@ -1,0 +1,147 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+    <div class="intro">{{ poll.question }}</div>
+
+    <!-- Begin Blog -->
+    <div class="container">
+        <div class="post photo">
+            <div class="icon-chat"></div>
+            <div class="content">
+                <div class="top"></div>
+                <div class="middle">
+                    <div id="pie{{ poll.id }}"
+                         style="padding-top: 20px; margin-left: 20px; width: 495px; height: 347px; position: relative;"
+                         class="jqplot-target"></div>
+                    <script>
+                        $(document).ready(function () {
+                            var plot{{ poll.id }} = $.jqplot('pie{{ poll.id }}', [
+                                [
+
+                                    {% for choice in poll.choice_set.all %}
+
+                                        ['{{ choice.choice_text }} - {{choice.votes}}', {{choice.votes}}],
+
+                                    {% endfor %}
+                                ]
+                            ], {
+
+                                seriesDefaults: {
+                                    renderer: $.jqplot.PieRenderer,
+                                    trendline: { show: false },
+                                    rendererOptions: { padding: 10, showDataLabels: true }
+                                },
+                                legend: { show: true, location: 'e' }
+                            });
+                        });
+                    </script>
+                    <div class="post-text">
+                        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+                        <form action="{% url 'polls:vote' poll.id %}" method="post">
+                            {% csrf_token %}
+                            {% for choice in poll.choice_set.all %}
+                                <input type="radio" name="choice" id="choice{{ forloop.counter }}"
+                                       value="{{ choice.id }}"/>
+                                <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br/>
+                            {% endfor %}
+                            <input type="submit" value="Vote"/>
+                        </form>
+                    </div>
+                    <div class="meta-wrapper">
+                        <div class="meta">
+                            <ul class="post-info">
+                                <li><span class="post-link"></span><a href="#">{{ poll.pub_date }}</a></li>
+                                <li><span class="post-comment"></span><a href="#">{{ poll.comment_set.count }} Comments</a></li>
+                                <li><span class="post-tag"></span>{% for tag in poll.tags.all %}
+                                    <a href="#">{{ tag }}</a>,
+                                {% endfor %}</li>
+                            </ul>
+                            <div class="share"><span class="post-share"></span><a href="#">Share</a></div>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+        </div>
+
+
+        <!-- Begin Comments Section -->
+        <!-- Begin Comments -->
+        {% if poll.comment_set.count > 0 %}
+            <h3 class="line">{{ poll.comment_set.count }} Responses</h3>
+
+            <!-- Begin Comments -->
+            <div id="comments">
+                <ol id="singlecomments" class="commentlist">
+                    {% for comment in poll.comment_set.all %}
+                        <li class="clearfix">
+                            <div class="user"><img alt="" src="{{ comment.user.profile.gravatar_url }}" height="48"
+                                                   width="48" class="avatar"/></div>
+                            <div class="message">
+                                <div class="info">
+                                    <h4><a href="#">{{ comment.user.username }}</a></h4>
+                                    <span class="date">{{ comment.comment_date }}</span></div>
+                                <p>{{ comment.comment_text }}</p>
+                            </div>
+                            <div class="clear"></div>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        {% endif %}
+        <!-- End Comments -->
+
+        <!-- Begin Form -->
+        <div class="comment-form">
+            <h3 class="line">Leave a Reply</h3>
+
+
+                       <div class="form-container">
+            <form class="forms" action="{% url 'polls:comment' %}" method="post">
+                <fieldset>
+                    <ol>
+                        {% csrf_token %}
+                        {% for field in comment_form %}
+                            <li class="form-row text-area-row"><label>{{ field.label|title }}:</label>{{ field }}</li>
+                        {% endfor %}
+                    </ol>
+                    <input type="hidden" name="pollid" value="{{ poll.id }}" />
+                    <input type="submit" value="Submit Comment">
+                </fieldset>
+
+
+            </form>
+
+                    </fieldset>
+                </form>
+                <div class="response"></div>
+            </div>
+        </div>
+        <!-- End Form -->
+
+        <!-- End Comments -->
+        <!-- End Comments Section -->
+
+    </div>
+    <!-- End Container -->
+{% endblock content %}
+
+{% block sidebar %}
+    {% if similar_polls.count > 0 %}
+    <div class="sidebox">
+        <h3 class="line">Similar Polls</h3>
+        <ul class="popular-posts">
+            {% for p in similar_polls %}
+                <li>
+
+                    <h5><a href="{% url 'polls:detail' p.id %}">{{ p.question }}</a></h5>
+                    <span>{{ p.pub_date }} | <a href="{% url 'polls:detail' p.id %}">{{ p.num_votes }} Votes</a> | <a
+                            href="{% url 'polls:detail' p.id %}">{{ p.entry_set.count }} Comments</a></span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+        {% endblock sidebar %}
