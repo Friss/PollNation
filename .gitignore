@@ -1,4 +1,25 @@
-venv
+# python
 *.pyc
+.c9*/*
+
+# virtualenv
+/lib/
+/local/
+/include/
+/bin/
+/src/
+/lib64/
+/lib64
+
+# development
 /.idea/
-/database/
+/static/
+<<<<<<< HEAD
+/database.db
+/database/database.db
+=======
+/development.db
+>>>>>>> Reworking file names and locations cleaning things up
+
+# mac
+.DS_Store

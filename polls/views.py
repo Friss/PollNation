@@ -129,7 +129,7 @@ def signup(request):
     return redirect('/polls/register')
 
 
-@login_required
+
 def comment(request):
     user_comment = CommentForm(data=request.POST)
     if request.method == 'POST':
@@ -173,16 +173,29 @@ def directory(request):
 def search(request):
     query_string = ''
     found_entries = None
+    
+    top_polls = Poll.objects.annotate(num_votes=Sum('choice__votes')).order_by('-num_votes')
+    top_tags = Poll.tags.most_common()[:10]
+    
+    if request.user.is_authenticated():
+            auth_form = False
+            logged_in = True
+
+    else:
+        logged_in = False
+        auth_form = AuthenticateForm()
+
     if ('q' in request.GET) and request.GET['q'].strip():
         query_string = request.GET['q']
 
         entry_query = get_query(query_string, ['question'])
 
         tag_query = normalize_query(query_string)
-        found_entries = Poll.objects.annotate(num_votes=Sum('choice__votes')).filter(entry_query).order_by('-pub_date')
+        found_entries = Poll.objects.annotate(num_votes=Sum('choice__votes')).filter(entry_query).order_by('-pub_date').distinct()
         tag_entries = Poll.objects.filter(tags__name__in=tag_query).distinct()
 
-        result_list = sorted(chain(found_entries, tag_entries),key=attrgetter('pub_date'))
+        
+        result_list = found_entries | tag_entries
 
         paginator = Paginator(result_list, 5) # Show 5 polls per page
 
@@ -198,19 +211,18 @@ def search(request):
         except (EmptyPage, InvalidPage):
             polls = paginator.page(paginator.num_pages)
 
-        if request.user.is_authenticated():
-            auth_form = False
-            logged_in = True
+        
 
-        else:
-            logged_in = False
-            auth_form = AuthenticateForm()
+        
 
-        top_polls = Poll.objects.annotate(num_votes=Sum('choice__votes')).order_by('-num_votes')
-        top_tags = Poll.tags.most_common()[:10]
-
-    return render_to_response('polls/search_results.html',
-                              {"top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form, "polls": polls,
+        return render_to_response('polls/search_results.html',
+                                  {"top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form, "polls": polls,
+                                   "logged_in": logged_in, 'query_string': query_string, 'result_list': result_list},
+                                  context_instance=RequestContext(request))
+    else:
+        result_list = False
+        return render_to_response('polls/search_results.html',
+                              {"top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form,
                                "logged_in": logged_in, 'query_string': query_string, 'result_list': result_list},
                               context_instance=RequestContext(request))
 
@@ -239,70 +251,62 @@ def get_query(query_string, search_fields):
     return query
 
 def create(request):
-    if request.user.is_authenticated():
-        class RequiredFormSet(BaseFormSet):
-            def __init__(self, *args, **kwargs):
-                super(RequiredFormSet, self).__init__(*args, **kwargs)
-                for form in self.forms:
-                    form.empty_permitted = False
+    
+    class RequiredFormSet(BaseFormSet):
+        def __init__(self, *args, **kwargs):
+            super(RequiredFormSet, self).__init__(*args, **kwargs)
+            for form in self.forms:
+                form.empty_permitted = False
 
-        ChoiceFormSet = formset_factory(ChoiceForm, max_num=10, formset=RequiredFormSet)
-        if request.method == 'POST': # If the form has been submitted...
-            poll_form = PollForm(request.POST) # A form bound to the POST data
-            # Create a formset from the submitted data
-            choice_formset = ChoiceFormSet(request.POST, request.FILES)
+    ChoiceFormSet = formset_factory(ChoiceForm, max_num=10, formset=RequiredFormSet)
+    if request.method == 'POST': # If the form has been submitted...
+        poll_form = PollForm(request.POST) # A form bound to the POST data
+        # Create a formset from the submitted data
+        choice_formset = ChoiceFormSet(request.POST, request.FILES)
 
-            if poll_form.is_valid() and choice_formset.is_valid():
-                poll = poll_form.save(commit=False)
+        if poll_form.is_valid() and choice_formset.is_valid():
+            poll = poll_form.save(commit=False)
+            if request.user.is_authenticated():
                 poll.creator = request.user
-                poll.save()
-                poll_form.save_m2m()
-                for form in choice_formset.forms:
-                    choice = form.save(commit=False)
-                    choice.poll = poll
-                    choice.save()
-                top_polls = Poll.objects.annotate(num_votes=Sum('choice__votes')).order_by('-num_votes')
-                top_tags = Poll.tags.most_common()[:10]
-                all_tags = Poll.tags.most_common()
-                if request.user.is_authenticated():
-                    auth_form = False
-                    logged_in = True
+            poll.save()
+            poll_form.save_m2m()
+            for form in choice_formset.forms:
+                choice = form.save(commit=False)
+                choice.poll = poll
+                choice.save()
+            top_polls = Poll.objects.annotate(num_votes=Sum('choice__votes')).order_by('-num_votes')
+            top_tags = Poll.tags.most_common()[:10]
+            all_tags = Poll.tags.most_common()
+            if request.user.is_authenticated():
+                auth_form = False
+                logged_in = True
 
-                else:
-                    logged_in = False
-                    auth_form = AuthenticateForm()
-                return render_to_response('polls/detail.html',
-                                  {"poll": poll, "top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form,
-                                   "logged_in": logged_in, "all_tags": all_tags}, context_instance=RequestContext(request))
-        else:
-            poll_form = PollForm()
-            choice_formset = ChoiceFormSet()
-
-
-
-        top_polls = Poll.objects.annotate(num_votes=Sum('choice__votes')).order_by('-num_votes')
-        top_tags = Poll.tags.most_common()[:10]
-        all_tags = Poll.tags.most_common()
-        if request.user.is_authenticated():
-            auth_form = False
-            logged_in = True
-
-        else:
-            logged_in = False
-            auth_form = AuthenticateForm()
-        return render_to_response('polls/create.html',
-                                  {"top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form,
-                                   "logged_in": logged_in, "all_tags": all_tags, "poll_form": poll_form, "choice_formset": choice_formset}, context_instance=RequestContext(request))
+            else:
+                logged_in = False
+                auth_form = AuthenticateForm()
+            return render_to_response('polls/detail.html',
+                              {"poll": poll, "top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form,
+                               "logged_in": logged_in, "all_tags": all_tags}, context_instance=RequestContext(request))
     else:
-        top_polls = Poll.objects.annotate(num_votes=Sum('choice__votes')).order_by('-num_votes')
-        top_tags = Poll.tags.most_common()[:10]
-        all_tags = Poll.tags.most_common()
+        poll_form = PollForm()
+        choice_formset = ChoiceFormSet()
 
+
+
+    top_polls = Poll.objects.annotate(num_votes=Sum('choice__votes')).order_by('-num_votes')
+    top_tags = Poll.tags.most_common()[:10]
+    all_tags = Poll.tags.most_common()
+    if request.user.is_authenticated():
+        auth_form = False
+        logged_in = True
+
+    else:
         logged_in = False
         auth_form = AuthenticateForm()
-        return render_to_response('polls/create.html',
-                                  {"top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form,
-                                   "logged_in": logged_in, "all_tags": all_tags}, context_instance=RequestContext(request))
+    return render_to_response('polls/create.html',
+                              {"top_polls": top_polls, "top_tags": top_tags, "auth_form": auth_form,
+                               "logged_in": logged_in, "all_tags": all_tags, "poll_form": poll_form, "choice_formset": choice_formset}, context_instance=RequestContext(request))
+
 
 def account(request):
     if request.user.is_authenticated():

@@ -17,7 +17,7 @@ User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])
 class Poll(models.Model):
     question = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published', auto_now_add=True)
-    creator = models.ForeignKey(User)
+    creator = models.ForeignKey(User, null=True)
     tags = TaggableManager()
 
     def __unicode__(self):
@@ -40,3 +40,11 @@ class Comment(models.Model):
 
     def __unicode__(self):
         return self.current_text
+
+
+class Vote(models.Model):
+    poll = models.ForeignKey(Poll)
+    choice = models.ForeignKey(Choice)
+    ip = models.GenericIPAddressField()
+    date = models.DateTimeField('date voted',auto_now_add=True)
+   

@@ -10,7 +10,8 @@
             <div class="content">
                 <div class="top"></div>
                 <div class="middle">
-                    <div id="pie{{ poll.id }}"
+                    
+                         <div id="pie{{ poll.id }}"
                          style="padding-top: 20px; margin-left: 20px; width: 495px; height: 347px; position: relative;"
                          class="jqplot-target"></div>
                     <script>
@@ -25,6 +26,9 @@
                                     {% endfor %}
                                 ]
                             ], {
+                                
+                                seriesColors: [ "#ffc100", "#4bb2c5", "#ff6c00", "#52f6a1", "#b5ff00", "#0085cc",
+                                                "#f526b9", "#4b5de4", "#ff0000", "#00eaff", "#ffed00"],
 
                                 seriesDefaults: {
                                     renderer: $.jqplot.PieRenderer,
@@ -35,6 +39,7 @@
                             });
                         });
                     </script>
+                   
                     <div class="post-text">
                         {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
@@ -51,8 +56,8 @@
                     <div class="meta-wrapper">
                         <div class="meta">
                             <ul class="post-info">
-                                <li><span class="post-link"></span><a href="#">{{ poll.pub_date }}</a></li>
-                                <li><span class="post-comment"></span><a href="#">{{ poll.comment_set.count }} Comments</a></li>
+                                <li><span class="post-link">Created: </span><a href="#">{{ poll.pub_date }}</a></li>
+                                <li><span class="post-comment"></span><a href="#">{{ poll.comment_set.count }} Comment{{ poll.comment_set.count|pluralize }}</a></li>
                                 <li><span class="post-tag"></span>{% for tag in poll.tags.all %}
                                     <a href="#">{{ tag }}</a>,
                                 {% endfor %}</li>
@@ -70,7 +75,7 @@
         <!-- Begin Comments Section -->
         <!-- Begin Comments -->
         {% if poll.comment_set.count > 0 %}
-            <h3 class="line">{{ poll.comment_set.count }} Responses</h3>
+            <h3 class="line">{{ poll.comment_set.count }} Response{{ poll.comment_set.count|pluralize }}</h3>
 
             <!-- Begin Comments -->
             <div id="comments">
@@ -92,7 +97,7 @@
             </div>
         {% endif %}
         <!-- End Comments -->
-
+{% if logged_in %}
         <!-- Begin Form -->
         <div class="comment-form">
             <h3 class="line">Leave a Reply</h3>
@@ -120,6 +125,9 @@
             </div>
         </div>
         <!-- End Form -->
+        {% else %}
+        <h3 class="line">Sign In or Sign Up to Leave a Comment</h3>
+        {% endif %}
 
         <!-- End Comments -->
         <!-- End Comments Section -->
@@ -138,7 +146,7 @@
 
                     <h5><a href="{% url 'polls:detail' p.id %}">{{ p.question }}</a></h5>
                     <span>{{ p.pub_date }} | <a href="{% url 'polls:detail' p.id %}">{{ p.num_votes }} Votes</a> | <a
-                            href="{% url 'polls:detail' p.id %}">{{ p.entry_set.count }} Comments</a></span>
+                            href="{% url 'polls:detail' p.id %}">{{ p.comment_set.count }} Comment{{ p.comment_set.count|pluralize }}</a></span>
                 </li>
             {% endfor %}
         </ul>

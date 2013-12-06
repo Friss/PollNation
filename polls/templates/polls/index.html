@@ -32,6 +32,8 @@
                                             {% endfor %}
                                         ]
                                     ], {
+                                        seriesColors: [ "#ffc100", "#4bb2c5", "#ff6c00", "#52f6a1", "#b5ff00", "#0085cc",
+                                                "#f526b9", "#4b5de4", "#ff0000", "#00eaff", "#ffed00"],
 
                                         seriesDefaults: {
                                             renderer: $.jqplot.PieRenderer,
@@ -46,14 +48,15 @@
     		<div class="meta-wrapper">
                                 <div class="meta">
                                     <ul class="post-info">
-                                        <li><span class="post-link"></span><a
+                                        <li><span class="post-link">Created: </span><a
                                                 href="{% url 'polls:detail' poll.id %}">{{ poll.pub_date }}</a></li>
                                         <li><span class="post-comment"></span><a href="{% url 'polls:detail' poll.id %}">Total
                                             Votes: {{ poll.num_votes }}</a> | <a href="{% url 'polls:detail' poll.id %}">Total
                                             Comments: {{ poll.comment_set.count }}</a></li>
                                         <li><span class="post-tag"></span>
                                             {% for tag in poll.tags.all %}
-                                                <a href="/polls/search?q={{ tag }}">{{ tag }}</a>,
+                                            {% if not forloop.first %}, {% endif %}
+                                                <a href="/polls/search?q={{ tag }}">{{ tag }}</a>
                                             {% endfor %}
                                     </ul>
                                     <div class="share"><span class="post-share"></span><a href="#">Share</a></div>

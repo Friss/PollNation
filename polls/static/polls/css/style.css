@@ -1272,6 +1272,22 @@ ul.cat-list:after {
     background: #f4f4f4 url(../images/search.png) 240px center no-repeat;
 }
 
+#searchpage input {
+    color: #848484;
+    height: 33px;
+    padding: 0 7px;
+    font-size: 14px;
+    border: none;
+    font-family: "SortsMillGoudyItalic";
+    -webkit-box-shadow: inset 0px 0px 0px 1px rgba(255, 255, 255, 1);
+    -moz-box-shadow: inset 0px 0px 0px 1px rgba(255, 255, 255, 1);
+    box-shadow: inset 0px 0px 0px 1px rgba(255, 255, 255, 1);
+    border: 1px solid #d5d5d5;
+    
+    width:100%;
+    background: #f4f4f4 url(../images/search.png) 98% center no-repeat;
+}
+
 /*-----------------------------------------------------------------------------------*/
 /*	PORTFOLIO
 /*-----------------------------------------------------------------------------------*/
@@ -1655,6 +1671,11 @@ ol.commentlist li {
 
 .sidebar input {
     width: 250px !important;
+}
+
+.sidebar #btnLogIn {
+    width:25% !important;
+    float:right;
 }
 
 .del {
